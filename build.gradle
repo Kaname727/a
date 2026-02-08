@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    // ★追加: 実行可能JARを作るためのプラグイン
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group 'jp.el'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+javafx {
+    version = "21"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+dependencies {
+    // Jackson (JSON読み込み用)
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
+    // JUnit (テスト用)
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = 'jp.el.AppLauncher'
+    mainClassName = 'jp.el.AppLauncher'
+}
+
+// 文字化け対策
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

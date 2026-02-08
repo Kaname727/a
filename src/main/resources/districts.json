@@ -1,0 +1,25 @@
+[
+  {
+    "name": "東京第1区",
+    "candidates": [
+      { "name": "田中 一郎", "party": "自由党" },
+      { "name": "佐藤 次郎", "party": "民進党" },
+      { "name": "鈴木 三郎", "party": "未来党" }
+    ]
+  },
+  {
+    "name": "東京第2区",
+    "candidates": [
+      { "name": "高橋 四郎", "party": "自由党" },
+      { "name": "伊藤 五郎", "party": "市民の会" }
+    ]
+  },
+  {
+    "name": "東京第3区",
+    "candidates": [
+      { "name": "渡辺 六郎", "party": "自由党" },
+      { "name": "山本 七郎", "party": "未来党" },
+      { "name": "中村 八郎", "party": "民進党" }
+    ]
+  }
+]

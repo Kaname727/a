@@ -1,0 +1,56 @@
+[
+  {
+    "name": "自由党",
+    "ideology": "保守・中道右派",
+    "popularity": 35,
+    "description": "経済成長と伝統的価値観を重視する最大勢力。安定した外交と産業振興を掲げる。"
+  },
+  {
+    "name": "民進党",
+    "ideology": "リベラル・中道左派",
+    "popularity": 25,
+    "description": "社会保障の充実と多様性を尊重する。格差是正と分配政策を重視。"
+  },
+  {
+    "name": "未来党",
+    "ideology": "改革派・テクノロジー",
+    "popularity": 15,
+    "description": "若者中心の改革派。徹底したデジタル化推進と教育完全無償化を掲げる。"
+  },
+  {
+    "name": "市民の会",
+    "ideology": "地域主義・環境",
+    "popularity": 8,
+    "description": "地域密着型の市民政党。草の根民主主義とボトムアップの政治を訴える。"
+  },
+  {
+    "name": "統一党",
+    "ideology": "伝統保守",
+    "popularity": 5,
+    "description": "国防強化と自主憲法制定を強く主張する右派政党。"
+  },
+  {
+    "name": "革新党",
+    "ideology": "革新左派",
+    "popularity": 5,
+    "description": "大企業への課税強化と富の再分配、消費税廃止を求める。"
+  },
+  {
+    "name": "緑の党",
+    "ideology": "環境優先",
+    "popularity": 4,
+    "description": "気候変動対策を最優先課題とし、脱炭素社会の早期実現を目指す。"
+  },
+  {
+    "name": "労働党",
+    "ideology": "社会民主主義",
+    "popularity": 2,
+    "description": "労働組合を支持基盤とする。雇用安定と労働者の権利拡大を目指す。"
+  },
+  {
+    "name": "無所属",
+    "ideology": "ノンパルチザン",
+    "popularity": 1,
+    "description": "特定の政党に属さず、独自の政策や地元利益を優先する候補者たち。"
+  }
+]
