@@ -9,6 +9,7 @@ import java.util.*;
 public class ElectionData {
     private List<Party> parties;
     private List<District> districts;
+    private final Set<String> currentLawmakers = new HashSet<>();
 
     // 都道府県ごとの定数データ
     private static final Map<String, Integer> PREFECTURE_SEATS = new LinkedHashMap<>();
@@ -49,6 +50,7 @@ public class ElectionData {
     private void init() {
         parties = new ArrayList<>();
         districts = new ArrayList<>();
+        loadCurrentLawmakers();
         ObjectMapper mapper = new ObjectMapper();
 
         try {
@@ -97,7 +99,30 @@ public class ElectionData {
 
     private String generateName() {
         Random r = new Random();
-        return SURNAMES[r.nextInt(SURNAMES.length)] + " " + NAMES[r.nextInt(NAMES.length)];
+        for (int attempts = 0; attempts < 1000; attempts++) {
+            String name = SURNAMES[r.nextInt(SURNAMES.length)] + " " + NAMES[r.nextInt(NAMES.length)];
+            if (!currentLawmakers.contains(name)) {
+                return name;
+            }
+        }
+        return "匿名 候補";
+    }
+
+    private void loadCurrentLawmakers() {
+        try (InputStream stream = getClass().getResourceAsStream("/current_diet_members.txt")) {
+            if (stream == null) {
+                return;
+            }
+            Scanner scanner = new Scanner(stream, "UTF-8");
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine().trim();
+                if (!line.isEmpty() && !line.startsWith("#")) {
+                    currentLawmakers.add(line);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public List<Party> getParties() { return parties; }
