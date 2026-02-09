@@ -41,6 +41,7 @@ public class ElectionData {
         public String ideology;
         public int popularity;
         public String description;
+        public Map<String, Integer> ideologies;
     }
 
     public ElectionData() {
@@ -59,11 +60,11 @@ public class ElectionData {
             if (partyStream != null) {
                 List<PartyDTO> dtos = mapper.readValue(partyStream, new TypeReference<List<PartyDTO>>() {});
                 for (PartyDTO dto : dtos) {
-                    parties.add(new Party(dto.name, dto.ideology, dto.popularity, dto.description));
+                    parties.add(new Party(dto.name, dto.ideology, dto.popularity, dto.description, dto.ideologies));
                 }
             } else {
-                parties.add(new Party("自由党", "保守", 40, "説明なし"));
-                parties.add(new Party("民進党", "リベラル", 30, "説明なし"));
+                parties.add(new Party("自由党", "保守", 40, "説明なし", null));
+                parties.add(new Party("民進党", "リベラル", 30, "説明なし", null));
             }
 
             // 2. 全国選挙区生成
