@@ -1,0 +1,140 @@
+.root-pane {
+  -fx-background-color: linear-gradient(to bottom, #f4f7fb, #e9f0f7);
+  -fx-padding: 20;
+}
+
+.title-root {
+  -fx-background-color: linear-gradient(to bottom right, #1f2a44, #355c7d);
+}
+
+.title-label {
+  -fx-text-fill: #ffffff;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 8, 0.2, 0, 2);
+}
+
+.title-button {
+  -fx-background-radius: 30;
+  -fx-font-size: 20px;
+  -fx-font-weight: bold;
+  -fx-text-fill: white;
+  -fx-cursor: hand;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0.2, 0, 2);
+}
+
+.title-button-primary {
+  -fx-background-color: linear-gradient(to right, #ff6b6b, #f06595);
+}
+
+.title-button-secondary {
+  -fx-background-color: linear-gradient(to right, #4dabf7, #339af0);
+}
+
+.header-bar {
+  -fx-background-color: rgba(255, 255, 255, 0.8);
+  -fx-padding: 12 16;
+  -fx-background-radius: 12;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0.2, 0, 2);
+}
+
+.header-title {
+  -fx-font-size: 20px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #2c3e50;
+}
+
+.toggle-button {
+  -fx-background-color: #ecf0f1;
+  -fx-background-radius: 16;
+  -fx-text-fill: #34495e;
+  -fx-font-weight: bold;
+  -fx-cursor: hand;
+}
+
+.toggle-button:selected {
+  -fx-background-color: #2f80ed;
+  -fx-text-fill: white;
+}
+
+.action-button {
+  -fx-background-color: linear-gradient(to right, #20c997, #12b886);
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+  -fx-background-radius: 18;
+  -fx-cursor: hand;
+}
+
+.back-button {
+  -fx-background-color: #34495e;
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+  -fx-background-radius: 18;
+  -fx-cursor: hand;
+}
+
+.map-toggle {
+  -fx-background-color: rgba(255,255,255,0.9);
+  -fx-padding: 6 10;
+  -fx-background-radius: 8;
+  -fx-font-weight: bold;
+  -fx-text-fill: #2c3e50;
+  -fx-cursor: hand;
+}
+
+.party-card {
+  -fx-background-color: #ffffff;
+  -fx-background-radius: 10;
+  -fx-border-color: #e0e6ed;
+  -fx-border-radius: 10;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0.2, 0, 2);
+}
+
+.party-card:hover {
+  -fx-border-color: #2f80ed;
+}
+
+.ideology-badge {
+  -fx-background-color: #95a5a6;
+  -fx-text-fill: white;
+  -fx-padding: 3 8;
+  -fx-background-radius: 10;
+  -fx-font-size: 10px;
+}
+
+.party-popularity {
+  -fx-text-fill: #7f8c8d;
+  -fx-font-size: 12px;
+}
+
+.party-description {
+  -fx-fill: #2c3e50;
+}
+
+.ideology-box {
+  -fx-background-color: #f8fafc;
+  -fx-padding: 10;
+  -fx-background-radius: 8;
+  -fx-border-color: #e2e8f0;
+  -fx-border-radius: 8;
+}
+
+.ideology-header {
+  -fx-font-size: 12px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #2c3e50;
+}
+
+.ideology-empty {
+  -fx-text-fill: #95a5a6;
+  -fx-font-size: 12px;
+}
+
+.ideology-name {
+  -fx-font-size: 12px;
+  -fx-text-fill: #34495e;
+}
+
+.ideology-score {
+  -fx-font-size: 12px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #2c3e50;
+}

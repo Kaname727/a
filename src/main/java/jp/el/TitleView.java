@@ -5,7 +5,6 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -22,34 +21,29 @@ public class TitleView {
     public Parent getView() {
         VBox root = new VBox(30);
         root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, #2c3e50, #4ca1af);");
+        root.getStyleClass().add("title-root");
 
         Label titleLabel = new Label("衆議院選挙\nシミュレーター");
+        titleLabel.getStyleClass().add("title-label");
         titleLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
-        titleLabel.setTextFill(Color.WHITE);
         titleLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
-        Button startButton = createButton("シミュレーション開始", "#e74c3c");
+        Button startButton = createButton("シミュレーション開始");
+        startButton.getStyleClass().add("title-button-primary");
         startButton.setOnAction(e -> onStartAction.run());
 
-        Button listButton = createButton("候補者・政党一覧", "#3498db");
+        Button listButton = createButton("候補者・政党一覧");
+        listButton.getStyleClass().add("title-button-secondary");
         listButton.setOnAction(e -> onListAction.run());
 
         root.getChildren().addAll(titleLabel, startButton, listButton);
         return root;
     }
 
-    private Button createButton(String text, String color) {
+    private Button createButton(String text) {
         Button btn = new Button(text);
         btn.setPrefSize(300, 60);
-        btn.setStyle(
-                "-fx-background-color: " + color + "; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-font-size: 20px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-radius: 30; " +
-                        "-fx-cursor: hand;"
-        );
+        btn.getStyleClass().add("title-button");
         return btn;
     }
 }

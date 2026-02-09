@@ -15,7 +15,9 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PartyAnalysisView extends TabPane {
 
@@ -115,7 +117,7 @@ public class PartyAnalysisView extends TabPane {
         HBox card = new HBox(15);
         card.setPadding(new Insets(15));
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: #f9f9f9; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;");
+        card.getStyleClass().add("party-card");
 
         Color color = PartyColors.get(p.getName());
         Circle colorIcon = new Circle(25, color);
@@ -130,21 +132,81 @@ public class PartyAnalysisView extends TabPane {
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
 
         Label ideologyBadge = new Label(p.getIdeology());
-        ideologyBadge.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: white; -fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px;");
+        ideologyBadge.getStyleClass().add("ideology-badge");
 
         Label popLabel = new Label("支持率: " + p.getPopularity() + "%");
-        popLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 12px;");
+        popLabel.getStyleClass().add("party-popularity");
 
         nameBox.getChildren().addAll(nameLabel, ideologyBadge, popLabel);
 
         Text description = new Text(p.getDescription());
         description.setFont(Font.font("System", 14));
         description.setWrappingWidth(550);
+        description.getStyleClass().add("party-description");
 
-        textContainer.getChildren().addAll(nameBox, description);
+        VBox ideologyBox = createIdeologyBox(p.getIdeologies());
+        ideologyBox.setVisible(false);
+        ideologyBox.setManaged(false);
+        ideologyBox.getStyleClass().add("ideology-box");
+
+        card.setOnMouseClicked(event -> toggleIdeologyBox(ideologyBox));
+
+        textContainer.getChildren().addAll(nameBox, description, ideologyBox);
         card.getChildren().addAll(colorIcon, textContainer);
 
         return card;
+    }
+
+    private VBox createIdeologyBox(Map<String, Integer> ideologies) {
+        VBox container = new VBox(6);
+        container.setPadding(new Insets(8, 0, 0, 0));
+        container.getStyleClass().add("ideology-container");
+
+        Label header = new Label("イデオロギー指標 (0〜20)");
+        header.getStyleClass().add("ideology-header");
+
+        if (ideologies == null || ideologies.isEmpty()) {
+            Label emptyLabel = new Label("詳細データはありません。");
+            emptyLabel.getStyleClass().add("ideology-empty");
+            container.getChildren().addAll(header, emptyLabel);
+            return container;
+        }
+
+        Map<String, Integer> ordered = new LinkedHashMap<>();
+        ordered.put("保守", ideologies.get("保守"));
+        ordered.put("リベラル", ideologies.get("リベラル"));
+        ordered.put("ポピュリズム", ideologies.get("ポピュリズム"));
+        ordered.put("リバタリアニズム", ideologies.get("リバタリアニズム"));
+        ordered.put("環境主義", ideologies.get("環境主義"));
+        ordered.put("積極財政", ideologies.get("積極財政"));
+        ordered.put("緊縮財政", ideologies.get("緊縮財政"));
+        ordered.put("ナショナリズム", ideologies.get("ナショナリズム"));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(12);
+        grid.setVgap(6);
+
+        int row = 0;
+        for (Map.Entry<String, Integer> entry : ordered.entrySet()) {
+            Label name = new Label(entry.getKey());
+            name.getStyleClass().add("ideology-name");
+
+            Integer value = entry.getValue();
+            String scoreText = value == null ? "-" : String.valueOf(value);
+            Label score = new Label(scoreText);
+            score.getStyleClass().add("ideology-score");
+
+            grid.addRow(row++, name, score);
+        }
+
+        container.getChildren().addAll(header, grid);
+        return container;
+    }
+
+    private void toggleIdeologyBox(VBox box) {
+        boolean next = !box.isVisible();
+        box.setVisible(next);
+        box.setManaged(next);
     }
 
     private TableView<PartyStats> createTableView() {

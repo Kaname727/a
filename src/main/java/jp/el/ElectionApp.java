@@ -21,6 +21,7 @@ public class ElectionApp extends Application {
         // 2. 最初の画面（タイトル）を表示するためのダミーRootを作成
         StackPane root = new StackPane();
         this.scene = new Scene(root); // サイズはあとで最大化される
+        this.scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         // 3. タイトル画面へ遷移
         showTitleScreen();
