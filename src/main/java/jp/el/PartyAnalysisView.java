@@ -12,7 +12,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -139,9 +138,10 @@ public class PartyAnalysisView extends TabPane {
 
         nameBox.getChildren().addAll(nameLabel, ideologyBadge, popLabel);
 
-        Text description = new Text(p.getDescription());
+        Label description = new Label(p.getDescription());
         description.setFont(Font.font("System", 14));
-        description.setWrappingWidth(550);
+        description.setWrapText(true);
+        description.setMaxWidth(550);
         description.getStyleClass().add("party-description");
 
         VBox ideologyBox = createIdeologyBox(p.getIdeologies());
