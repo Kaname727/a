@@ -15,7 +15,9 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PartyAnalysisView extends TabPane {
 
@@ -141,10 +143,67 @@ public class PartyAnalysisView extends TabPane {
         description.setFont(Font.font("System", 14));
         description.setWrappingWidth(550);
 
-        textContainer.getChildren().addAll(nameBox, description);
+        VBox ideologyBox = createIdeologyBox(p.getIdeologies());
+        ideologyBox.setVisible(false);
+        ideologyBox.setManaged(false);
+
+        card.setOnMouseClicked(event -> toggleIdeologyBox(ideologyBox));
+
+        textContainer.getChildren().addAll(nameBox, description, ideologyBox);
         card.getChildren().addAll(colorIcon, textContainer);
 
         return card;
+    }
+
+    private VBox createIdeologyBox(Map<String, Integer> ideologies) {
+        VBox container = new VBox(6);
+        container.setPadding(new Insets(8, 0, 0, 0));
+
+        Label header = new Label("イデオロギー指標 (0〜20)");
+        header.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+
+        if (ideologies == null || ideologies.isEmpty()) {
+            Label emptyLabel = new Label("詳細データはありません。");
+            emptyLabel.setStyle("-fx-text-fill: #95a5a6; -fx-font-size: 12px;");
+            container.getChildren().addAll(header, emptyLabel);
+            return container;
+        }
+
+        Map<String, Integer> ordered = new LinkedHashMap<>();
+        ordered.put("保守", ideologies.get("保守"));
+        ordered.put("リベラル", ideologies.get("リベラル"));
+        ordered.put("ポピュリズム", ideologies.get("ポピュリズム"));
+        ordered.put("リバタリアニズム", ideologies.get("リバタリアニズム"));
+        ordered.put("環境主義", ideologies.get("環境主義"));
+        ordered.put("積極財政", ideologies.get("積極財政"));
+        ordered.put("緊縮財政", ideologies.get("緊縮財政"));
+        ordered.put("ナショナリズム", ideologies.get("ナショナリズム"));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(12);
+        grid.setVgap(6);
+
+        int row = 0;
+        for (Map.Entry<String, Integer> entry : ordered.entrySet()) {
+            Label name = new Label(entry.getKey());
+            name.setStyle("-fx-font-size: 12px; -fx-text-fill: #34495e;");
+
+            Integer value = entry.getValue();
+            String scoreText = value == null ? "-" : String.valueOf(value);
+            Label score = new Label(scoreText);
+            score.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+
+            grid.addRow(row++, name, score);
+        }
+
+        container.getChildren().addAll(header, grid);
+        return container;
+    }
+
+    private void toggleIdeologyBox(VBox box) {
+        boolean next = !box.isVisible();
+        box.setVisible(next);
+        box.setManaged(next);
     }
 
     private TableView<PartyStats> createTableView() {
