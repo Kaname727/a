@@ -157,6 +157,12 @@ public class PartyAnalysisView extends TabPane {
         return card;
     }
 
+    private void toggleIdeologyBox(VBox box) {
+        boolean next = !box.isVisible();
+        box.setVisible(next);
+        box.setManaged(next);
+    }
+
     private VBox createIdeologyBox(Map<String, Integer> ideologies) {
         VBox container = new VBox(6);
         container.setPadding(new Insets(8, 0, 0, 0));
@@ -168,13 +174,6 @@ public class PartyAnalysisView extends TabPane {
         if (ideologies == null || ideologies.isEmpty()) {
             Label emptyLabel = new Label("詳細データはありません。");
             emptyLabel.getStyleClass().add("ideology-empty");
-
-        Label header = new Label("イデオロギー指標 (0〜20)");
-        header.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-
-        if (ideologies == null || ideologies.isEmpty()) {
-            Label emptyLabel = new Label("詳細データはありません。");
-            emptyLabel.setStyle("-fx-text-fill: #95a5a6; -fx-font-size: 12px;");
             container.getChildren().addAll(header, emptyLabel);
             return container;
         }
@@ -197,25 +196,17 @@ public class PartyAnalysisView extends TabPane {
         for (Map.Entry<String, Integer> entry : ordered.entrySet()) {
             Label name = new Label(entry.getKey());
             name.getStyleClass().add("ideology-name");
-            name.setStyle("-fx-font-size: 12px; -fx-text-fill: #34495e;");
 
             Integer value = entry.getValue();
             String scoreText = value == null ? "-" : String.valueOf(value);
             Label score = new Label(scoreText);
             score.getStyleClass().add("ideology-score");
-            score.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
             grid.addRow(row++, name, score);
         }
 
         container.getChildren().addAll(header, grid);
         return container;
-    }
-
-    private void toggleIdeologyBox(VBox box) {
-        boolean next = !box.isVisible();
-        box.setVisible(next);
-        box.setManaged(next);
     }
 
     private TableView<PartyStats> createTableView() {
