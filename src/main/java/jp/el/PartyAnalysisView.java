@@ -13,10 +13,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PartyAnalysisView extends TabPane {
 
@@ -52,7 +50,8 @@ public class PartyAnalysisView extends TabPane {
 
         chartBox.getChildren().addAll(pieChart, statsTable);
         statusLabel = new Label("待機中...");
-        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
+        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 16)); // フォントサイズ調整
+        statusLabel.setTextFill(Color.web("#e74c3c")); // 強調色
 
         analysisTabContent.getChildren().addAll(title, statusLabel, chartBox);
         Tab tab1 = new Tab("📊 勢力分析", analysisTabContent);
@@ -73,43 +72,140 @@ public class PartyAnalysisView extends TabPane {
     }
 
     public void updateData(List<Party> parties) {
-        // --- 1. 政党一覧タブ更新 ---
+        // 全政党の与党フラグを一旦リセット
+        parties.forEach(p -> p.setGovernment(false));
+
+        // --- 1. 政党一覧タブ更新 (支持率順) ---
         partyListContainer.getChildren().clear();
         parties.stream()
                 .sorted(Comparator.comparingInt(Party::getPopularity).reversed())
                 .forEach(p -> partyListContainer.getChildren().add(createPartyCard(p)));
 
         // --- 2. 分析タブ更新 ---
+        // まず議席順にソート
         parties.sort(Comparator.comparingInt(Party::getSeats).reversed());
         int totalSeats = parties.stream().mapToInt(Party::getSeats).sum();
 
         if (totalSeats == 0) {
             statusLabel.setText("まだ選挙が行われていません");
+            pieChart.setData(FXCollections.observableArrayList());
+            statsTable.setItems(FXCollections.observableArrayList());
             return;
         }
 
+        // ★ 連立政権 形成ロジック
+        List<Party> coalition = formCoalition(parties, totalSeats);
+
+        // 連立に入った党にフラグを立てる
+        coalition.forEach(p -> p.setGovernment(true));
+
+        // 連立名を作成 (例: "自由・民進連立政権")
+        String coalitionName = coalition.stream()
+                .map(Party::getName)
+                .collect(Collectors.joining("・")) + "連立政権";
+
+        int coalitionSeats = coalition.stream().mapToInt(Party::getSeats).sum();
+        double coalitionShareVal = (double)coalitionSeats / totalSeats * 100.0;
+        String coalitionShare = String.format("%.1f%%", coalitionShareVal);
+
+        // ステータス表示
+        statusLabel.setText("【政権】" + coalitionName + " (" + coalitionSeats + "議席 / " + coalitionShare + ")");
+
+        // ★ グラフ更新 (連立与党をまとめて先頭に配置)
         ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
-        for (Party p : parties) {
+
+
+        // 1. 連立与党を追加
+        for (Party p : coalition) {
             if (p.getSeats() > 0) {
-                pieData.add(new PieChart.Data(p.getName() + " (" + p.getSeats() + ")", p.getSeats()));
+                // 修正前: pieData.add(new PieChart.Data(p.getName() + "\n(与党)", p.getSeats()));
+                // 修正後: 名前、(与党)、議席数 を表示
+                pieData.add(new PieChart.Data(p.getName() + "\n(与党) " + p.getSeats() + "議席", p.getSeats()));
+            }
+        }
+        // 2. 野党を追加
+        for (Party p : parties) {
+            if (!coalition.contains(p) && p.getSeats() > 0) {
+                // 修正前: pieData.add(new PieChart.Data(p.getName(), p.getSeats()));
+                // 修正後: 名前、議席数 を表示
+                pieData.add(new PieChart.Data(p.getName() + " " + p.getSeats() + "議席", p.getSeats()));
             }
         }
         pieChart.setData(pieData);
 
+        // 色付け (名前の最初の部分だけを使って色を取得するロジックはそのまま維持)
         for (PieChart.Data d : pieChart.getData()) {
-            String partyName = d.getName().split(" \\(")[0];
-            String hexColor = PartyColors.getHex(partyName);
+            // 改行や空白で区切って、最初の要素（政党名）を取得
+            String rawName = d.getName().split("[\n ]")[0];
+            String hexColor = PartyColors.getHex(rawName);
             d.getNode().setStyle("-fx-pie-color: " + hexColor + ";");
         }
 
+        // ★ リスト更新 (連立政権を行に追加)
         ObservableList<PartyStats> tableData = FXCollections.observableArrayList();
+
+        // 先頭行に「連立政権」を追加 (rank=0)
+        tableData.add(new PartyStats(0, "★ " + coalitionName, coalitionSeats, coalitionShare));
+
         int rank = 1;
         for (Party p : parties) {
             double share = (double) p.getSeats() / totalSeats * 100.0;
-            tableData.add(new PartyStats(rank++, p.getName(), p.getSeats(), String.format("%.1f%%", share)));
+            // 与党入りしている場合は矢印をつける
+            String nameDecor = coalition.contains(p) ? "  ↳ " + p.getName() : p.getName();
+            tableData.add(new PartyStats(rank++, nameDecor, p.getSeats(), String.format("%.1f%%", share)));
         }
         statsTable.setItems(tableData);
-        statusLabel.setText("総議席数: " + totalSeats + "  /  過半数ライン: " + (totalSeats / 2 + 1));
+    }
+
+    // ★ 連立形成ロジック
+    // ★ 連立形成ロジック (無所属除外対応版)
+    private List<Party> formCoalition(List<Party> sortedParties, int totalSeats) {
+        List<Party> coalition = new ArrayList<>();
+        if (sortedParties.isEmpty()) return coalition;
+
+        // 第1党は必ず入る
+        Party leader = sortedParties.get(0);
+        coalition.add(leader);
+
+        // ★追加: 第一党が「無所属」なら連立を組まない（単独扱い）
+        if (leader.getName().equals("無所属")) {
+            return coalition;
+        }
+
+        int currentSeats = leader.getSeats();
+        int majority = totalSeats / 2 + 1;
+
+        // 単独過半数なら終了
+        if (currentSeats >= majority) {
+            return coalition;
+        }
+
+        // 連立パートナー候補 (第1党以外)
+        List<Party> partners = new ArrayList<>(sortedParties);
+        partners.remove(leader);
+
+        // 協力度が高い順にソート
+        partners.sort((p1, p2) -> Double.compare(leader.calculateCooperation(p2), leader.calculateCooperation(p1)));
+
+        // 協力度の高い1つか2つの党と組む
+        for (Party p : partners) {
+            // ★追加: パートナーが「無所属」なら連立に加えない
+            if (p.getName().equals("無所属")) continue;
+
+            // 協力度が極端に低い(30未満)なら組まない
+            if (leader.calculateCooperation(p) < 30.0) continue;
+
+            coalition.add(p);
+            currentSeats += p.getSeats();
+
+            // 過半数到達したら終了
+            if (currentSeats >= majority) break;
+
+            // すでに3党(リーダー+2党)なら終了
+            if (coalition.size() >= 3) break;
+        }
+
+        return coalition;
     }
 
     private HBox createPartyCard(Party p) {
@@ -216,6 +312,21 @@ public class PartyAnalysisView extends TabPane {
         colRank.setCellValueFactory(new PropertyValueFactory<>("rank"));
         colRank.setPrefWidth(50);
 
+        // ★追加: 順位が0の場合は「政府」と表示する
+        colRank.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item == 0 ? "政府" : item.toString());
+                    if (item == 0) setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
+                    else setStyle("");
+                }
+            }
+        });
+
         TableColumn<PartyStats, String> colName = new TableColumn<>("政党名");
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colName.setPrefWidth(120);
@@ -234,6 +345,7 @@ public class PartyAnalysisView extends TabPane {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         return table;
     }
+
 
     public static class PartyStats {
         private final int rank; private final String name; private final int seats; private final String share;

@@ -122,6 +122,27 @@ public class ResultView {
         root.getChildren().addAll(header, contentStack, backBtn);
         return root;
     }
+    // 例: 全政党の組み合わせで協力度を表示する
+    public void printCoalitionMatrix(List<Party> parties) {
+        System.out.println("--- 政党間 協力度マトリクス ---");
+
+        for (Party p1 : parties) {
+            for (Party p2 : parties) {
+                if (p1 == p2) continue; // 自分自身はスキップ
+
+                double score = p1.calculateCooperation(p2);
+
+                // 協力度が70%以上なら「連立の可能性あり」
+                if (score >= 70.0) {
+                    System.out.printf("🤝 %s と %s は仲が良いです (親和性: %.1f%%)\n",
+                            p1.getName(), p2.getName(), score);
+                } else if (score <= 30.0) {
+                    System.out.printf("⚔️ %s と %s は対立しています (親和性: %.1f%%)\n",
+                            p1.getName(), p2.getName(), score);
+                }
+            }
+        }
+    }
 
     private void switchView(javafx.scene.Node show, javafx.scene.Node... hides) {
         show.setVisible(true);
