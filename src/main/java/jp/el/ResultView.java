@@ -32,6 +32,7 @@ public class ResultView {
 
         HBox header = new HBox(20);
         header.setAlignment(Pos.CENTER_LEFT);
+        header.getStyleClass().add("header-bar");
 
         Label title = new Label(isSimulationMode ? "衆院選シミュレーター" : "候補者データ一覧");
         title.getStyleClass().add("header-title");
@@ -74,8 +75,7 @@ public class ResultView {
         // 地図上の議席数表示切替チェックボックス
         CheckBox labelCheck = new CheckBox("議席数を表示");
         labelCheck.setSelected(true);
-        labelCheck.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 12));
-        labelCheck.setStyle("-fx-background-color: rgba(255,255,255,0.8); -fx-padding: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+        labelCheck.getStyleClass().add("map-toggle");
         labelCheck.setOnAction(e -> mapView.setLabelsVisible(labelCheck.isSelected()));
 
         // 地図とチェックボックスを重ねる

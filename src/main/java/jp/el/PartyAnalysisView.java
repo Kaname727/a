@@ -12,7 +12,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -117,7 +116,7 @@ public class PartyAnalysisView extends TabPane {
         HBox card = new HBox(15);
         card.setPadding(new Insets(15));
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: #f9f9f9; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;");
+        card.getStyleClass().add("party-card");
 
         Color color = PartyColors.get(p.getName());
         Circle colorIcon = new Circle(25, color);
@@ -132,20 +131,23 @@ public class PartyAnalysisView extends TabPane {
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
 
         Label ideologyBadge = new Label(p.getIdeology());
-        ideologyBadge.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: white; -fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px;");
+        ideologyBadge.getStyleClass().add("ideology-badge");
 
         Label popLabel = new Label("支持率: " + p.getPopularity() + "%");
-        popLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 12px;");
+        popLabel.getStyleClass().add("party-popularity");
 
         nameBox.getChildren().addAll(nameLabel, ideologyBadge, popLabel);
 
-        Text description = new Text(p.getDescription());
+        Label description = new Label(p.getDescription());
         description.setFont(Font.font("System", 14));
-        description.setWrappingWidth(550);
+        description.setWrapText(true);
+        description.setMaxWidth(550);
+        description.getStyleClass().add("party-description");
 
         VBox ideologyBox = createIdeologyBox(p.getIdeologies());
         ideologyBox.setVisible(false);
         ideologyBox.setManaged(false);
+        ideologyBox.getStyleClass().add("ideology-box");
 
         card.setOnMouseClicked(event -> toggleIdeologyBox(ideologyBox));
 
@@ -158,6 +160,14 @@ public class PartyAnalysisView extends TabPane {
     private VBox createIdeologyBox(Map<String, Integer> ideologies) {
         VBox container = new VBox(6);
         container.setPadding(new Insets(8, 0, 0, 0));
+        container.getStyleClass().add("ideology-container");
+
+        Label header = new Label("イデオロギー指標 (0〜20)");
+        header.getStyleClass().add("ideology-header");
+
+        if (ideologies == null || ideologies.isEmpty()) {
+            Label emptyLabel = new Label("詳細データはありません。");
+            emptyLabel.getStyleClass().add("ideology-empty");
 
         Label header = new Label("イデオロギー指標 (0〜20)");
         header.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
@@ -186,11 +196,13 @@ public class PartyAnalysisView extends TabPane {
         int row = 0;
         for (Map.Entry<String, Integer> entry : ordered.entrySet()) {
             Label name = new Label(entry.getKey());
+            name.getStyleClass().add("ideology-name");
             name.setStyle("-fx-font-size: 12px; -fx-text-fill: #34495e;");
 
             Integer value = entry.getValue();
             String scoreText = value == null ? "-" : String.valueOf(value);
             Label score = new Label(scoreText);
+            score.getStyleClass().add("ideology-score");
             score.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
             grid.addRow(row++, name, score);
