@@ -47,6 +47,7 @@ public class ElectionData {
     public ElectionData() {
         init();
     }
+    private Map<String, PrefectureData> prefectureMap = new HashMap<>();
 
     private void init() {
         parties = new ArrayList<>();
@@ -67,13 +68,24 @@ public class ElectionData {
                 parties.add(new Party("民進党", "リベラル", 30, "説明なし", null));
             }
 
+
             // 2. 全国選挙区生成
             generateNationwideDistricts();
 
+// ★ 都道府県データの読み込み
+            InputStream prefStream = getClass().getResourceAsStream("/prefectures.json");
+            if (prefStream != null) {
+                List<PrefectureData> prefList = mapper.readValue(prefStream, new TypeReference<List<PrefectureData>>() {});
+                for (PrefectureData p : prefList) {
+                    prefectureMap.put(p.getName(), p);
+                }
+                System.out.println("都道府県データ読み込み完了: " + prefectureMap.size() + "件");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
     private void generateNationwideDistricts() {
         Random rand = new Random();
@@ -97,7 +109,27 @@ public class ElectionData {
             }
         }
     }
+    // 3. 取得用メソッドを追加
+// 選挙区名（例："東京都第1区"）から都道府県データを取得する
+// ElectionData.java
 
+    // ★追加: 選挙区名から都道府県データを取得するメソッド
+    public PrefectureData getPrefectureData(String districtName) {
+        // "東京都第1区" -> "東京都" を取り出す簡易ロジック
+        for (String prefName : prefectureMap.keySet()) {
+            if (districtName.startsWith(prefName)) {
+                return prefectureMap.get(prefName);
+            }
+        }
+        return null;
+    }
+
+    // もし init() 内で prefectureMap への読み込みをまだ書いていない場合は、
+    // 前回の回答を参考に loadPrefectures() のような処理を追加してください。
+    public PrefectureData getPrefectureByName(String prefName) {
+        if (prefectureMap == null) return null;
+        return prefectureMap.get(prefName);
+    }
     private String generateName() {
         Random r = new Random();
         for (int attempts = 0; attempts < 1000; attempts++) {
@@ -125,6 +157,7 @@ public class ElectionData {
             e.printStackTrace();
         }
     }
+
 
     public List<Party> getParties() { return parties; }
     public List<District> getDistricts() { return districts; }

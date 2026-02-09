@@ -24,6 +24,8 @@ public class ResultView {
         this.isSimulationMode = isSimulationMode;
         this.onBackAction = onBackAction;
     }
+    // ★追加
+    private PrefectureDetailView detailView;
 
     public Parent getView() {
         VBox root = new VBox(15);
@@ -71,6 +73,24 @@ public class ResultView {
 
         // 2. 地図 (★修正: チェックボックス付きのラッパーを作成)
         mapView = new JapanMapView();
+        // 2. 地図 (mapWrapper) の構築部分を修正
+        mapView = new JapanMapView();
+
+        // ★追加: 詳細パネルの作成 (最初は非表示)
+        detailView = new PrefectureDetailView(() -> detailView.setVisible(false));
+        detailView.setVisible(false);
+
+        // ★追加: 地図クリック時の動作設定
+        mapView.setOnPrefectureClick(prefName -> {
+            // データを取得
+            PrefectureData pData = data.getPrefectureByName(prefName);
+            if (pData != null) {
+                // パネルにデータをセットして表示
+                detailView.setData(pData);
+                detailView.setVisible(true);
+                detailView.toFront(); // 最前面へ
+            }
+        });
 
         // 地図上の議席数表示切替チェックボックス
         CheckBox labelCheck = new CheckBox("議席数を表示");
@@ -79,10 +99,10 @@ public class ResultView {
         labelCheck.setOnAction(e -> mapView.setLabelsVisible(labelCheck.isSelected()));
 
         // 地図とチェックボックスを重ねる
-        mapWrapper = new StackPane(mapView, labelCheck);
-        StackPane.setAlignment(labelCheck, Pos.TOP_RIGHT); // 右上に配置
+        mapWrapper = new StackPane(mapView, labelCheck, detailView);
         StackPane.setMargin(labelCheck, new Insets(10));
         mapWrapper.setVisible(false);
+
 
         // 3. 分析
         analysisView = new PartyAnalysisView();
@@ -149,12 +169,28 @@ public class ResultView {
         for(javafx.scene.Node h : hides) h.setVisible(false);
     }
 
+    // ResultView.java
+
     private void runSimulation() {
         Random rand = new Random();
+
+        // 1. リセット
         data.getParties().forEach(Party::reset);
         data.getDistricts().forEach(d -> d.getCandidates().forEach(Candidate::resetVotes));
 
+        // 2. 選挙区ごとに投票
         for (District d : data.getDistricts()) {
+            // 都道府県データを取得
+            PrefectureData pref = data.getPrefectureData(d.getName());
+
+            // データがない場合のデフォルト値（全国平均など）
+            double primaryInd = (pref != null) ? pref.getPrimary() : 4.0;
+            double secondaryInd = (pref != null) ? pref.getSecondary() : 25.0;
+            double tertiaryInd = (pref != null) ? pref.getTertiary() : 71.0;
+            int income = (pref != null) ? pref.getIncome() : 300;
+            double elderly = (pref != null) ? pref.getElderly() : 29.0;
+
+            // 投票数（3000〜6000票）
             int totalVoters = 3000 + rand.nextInt(3000);
             List<Candidate> candidates = d.getCandidates();
 
@@ -163,23 +199,75 @@ public class ResultView {
 
             for (int i = 0; i < candidates.size(); i++) {
                 Party p = candidates.get(i).getParty();
-                int weight = p.getPopularity() + rand.nextInt(15);
-                if (weight <= 0) weight = 1;
-                weights[i] = weight;
-                totalWeight += weight;
+                Map<String, Integer> ideology = p.getIdeologies(); // 0~20のスコア
+
+                // --- ★支持率計算ロジック ---
+                double score = p.getPopularity(); // 基礎人気
+
+                if (ideology != null) {
+                    // 1. 産業構造による補正
+                    // 第1次産業が高い -> 保守(安定)・環境にプラス
+                    if (primaryInd > 8.0) {
+                        score += ideology.getOrDefault("保守", 0) * 0.5;
+                        score += ideology.getOrDefault("環境主義", 0) * 0.3;
+                    }
+
+                    // 第2次産業が高い -> 積極財政・労働支援にプラス
+                    if (secondaryInd > 30.0) {
+                        score += ideology.getOrDefault("積極財政", 0) * 0.4;
+                        // 労働党など特定の名前へのボーナスも可
+                        if (p.getName().contains("労働")) score += 10;
+                    }
+
+                    // 第3次産業が高い(都市部) -> リベラル・改革(ポピュリズム)にプラス
+                    if (tertiaryInd > 75.0) {
+                        score += ideology.getOrDefault("リベラル", 0) * 0.5;
+                        score += ideology.getOrDefault("ポピュリズム", 0) * 0.3;
+                    }
+
+                    // 2. 年収による補正
+                    if (income > 350) { // 高所得地域
+                        // 減税(リバタリアン)や保守を好む傾向
+                        score += ideology.getOrDefault("リバタリアニズム", 0) * 0.4;
+                        score += ideology.getOrDefault("保守", 0) * 0.3;
+                    } else { // 低所得地域
+                        // 再分配(リベラル)や大きな政府(積極財政)を好む
+                        score += ideology.getOrDefault("リベラル", 0) * 0.4;
+                        score += ideology.getOrDefault("積極財政", 0) * 0.4;
+                    }
+
+                    // 3. 年齢構成による補正
+                    if (elderly > 32.0) { // 高齢化地域 -> 保守・ナショナリズム
+                        score += ideology.getOrDefault("保守", 0) * 0.6;
+                        score += ideology.getOrDefault("ナショナリズム", 0) * 0.3;
+                    } else { // 若い地域 -> リベラル・革新
+                        score += ideology.getOrDefault("リベラル", 0) * 0.5;
+                        score += ideology.getOrDefault("環境主義", 0) * 0.3;
+                    }
+                }
+
+                // ランダムな揺らぎ (+-15%)
+                double randomFactor = 0.85 + (rand.nextDouble() * 0.3);
+                int finalWeight = (int)(score * randomFactor * 10); // 整数化
+
+                if (finalWeight <= 0) finalWeight = 1;
+                weights[i] = finalWeight;
+                totalWeight += finalWeight;
             }
 
+            // 加重抽選（重みに応じて当選確率が決まる）
             for(int v = 0; v < totalVoters; v++) {
                 int r = rand.nextInt(totalWeight);
-                for (int i = 0; i < candidates.size(); i++) {
-                    r -= weights[i];
+                for (int k = 0; k < candidates.size(); k++) {
+                    r -= weights[k];
                     if (r < 0) {
-                        candidates.get(i).addVote();
+                        candidates.get(k).addVote();
                         break;
                     }
                 }
             }
 
+            // 勝者判定
             Candidate w = d.getWinner();
             if(w != null) w.getParty().addSeat();
         }

@@ -35,6 +35,13 @@ public class JapanMapView extends Pane {
             SVGPath path = new SVGPath();
             path.setContent(entry.getValue());
             path.getStyleClass().add("map-path");
+            // ★追加: クリックイベント
+            path.setOnMouseClicked(e -> {
+                if (onPrefectureClick != null) {
+                    onPrefectureClick.accept(prefName);
+                }
+                e.consume(); // イベントが裏に抜けないようにする
+            });
 
             path.setFill(Color.WHITE);
             path.setStroke(Color.LIGHTGRAY);
@@ -61,6 +68,13 @@ public class JapanMapView extends Pane {
         this.getChildren().add(contentGroup);
 
         javafx.application.Platform.runLater(this::fitMapToView);
+    }
+    // ★追加: クリック時のコールバック
+    private java.util.function.Consumer<String> onPrefectureClick;
+
+    // ★追加: コールバックをセットするメソッド
+    public void setOnPrefectureClick(java.util.function.Consumer<String> handler) {
+        this.onPrefectureClick = handler;
     }
 
     private void fitMapToView() {
